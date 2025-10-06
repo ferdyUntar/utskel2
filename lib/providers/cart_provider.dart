@@ -1,21 +1,26 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/menu_item.dart';
 
 class CartProvider with ChangeNotifier {
-  final List<MenuItem> _items = [];
+  final List<MenuItem> _cart = [];
 
-  List<MenuItem> get items => _items;
-
-  void addItem(MenuItem item) {
-    _items.add(item);
-    notifyListeners();
-  }
-
-  void removeItem(MenuItem item) {
-    _items.remove(item);
-    notifyListeners();
-  }
+  List<MenuItem> get cart => _cart;
 
   double get totalPrice =>
-      _items.fold(0, (sum, item) => sum + item.price);
+      _cart.fold(0, (sum, item) => sum + item.price);
+
+  void addToCart(MenuItem item) {
+    _cart.add(item);
+    notifyListeners();
+  }
+
+  void removeFromCart(MenuItem item) {
+    _cart.remove(item);
+    notifyListeners();
+  }
+
+  void clearCart() {
+    _cart.clear();
+    notifyListeners();
+  }
 }
