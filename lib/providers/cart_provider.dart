@@ -23,4 +23,5 @@ class CartProvider with ChangeNotifier {
     _cart.clear();
     notifyListeners();
   }
+
 }
