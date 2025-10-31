@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
 import '../providers/cart_provider.dart';
 import '../widgets/menu_card.dart';
+import '../providers/user_provider.dart';
+import 'login.dart';
 import '../screens/pembayaran_screen.dart';
 
 
@@ -24,6 +26,17 @@ class MenuScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Daftar Menu"),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<UserProvider>(context, listen: false).logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          ),
+
           Stack(
             children: [
               IconButton(
