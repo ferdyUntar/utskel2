@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
 import '../providers/cart_provider.dart';
-import '../widgets/menu_card.dart';
+import '../providers/theme_provider.dart';
 import '../providers/user_provider.dart';
+import '../widgets/menu_card.dart';
 import 'login.dart';
-import '../screens/pembayaran_screen.dart';
-
+import 'pembayaran_screen.dart';
 
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
@@ -21,29 +21,28 @@ class MenuScreen extends StatelessWidget {
     ];
 
     final cart = Provider.of<CartProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("Daftar Menu"),
+        title: const Text("Daftar Menu", style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Provider.of<UserProvider>(context, listen: false).logout();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
-            },
+            tooltip: 'Toggle theme',
+            icon: Icon(isDark ? Icons.wb_sunny : Icons.nights_stay),
+            onPressed: () => themeProvider.toggleTheme(),
           ),
-
           Stack(
             children: [
               IconButton(
+                tooltip: 'Keranjang',
                 icon: const Icon(Icons.shopping_cart),
-                onPressed: () {
-                  _showCartDialog(context, cart);
-                },
+                onPressed: () => _showCartDialog(context, cart),
               ),
               if (cart.cart.isNotEmpty)
                 Positioned(
@@ -63,30 +62,77 @@ class MenuScreen extends StatelessWidget {
                 ),
             ],
           ),
+          IconButton(
+            tooltip: 'Logout',
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              Provider.of<UserProvider>(context, listen: false).logout();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          ),
         ],
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(10),
-        gridDelegate:
-        const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-        itemCount: menu.length,
-        itemBuilder: (context, index) {
-          return MenuCard(item: menu[index]);
-        },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [Colors.black, Colors.indigo.shade900]
+                : [Colors.purple.shade300, Colors.blue.shade200],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = constraints.maxWidth > 900
+                  ? 4
+                  : constraints.maxWidth > 600
+                  ? 3
+                  : 2;
+
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GridView.builder(
+                  itemCount: menu.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemBuilder: (context, index) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                      child: MenuCard(item: menu[index]),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
   void _showCartDialog(BuildContext context, CartProvider cart) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text("Keranjang Belanja"),
+          backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
+          title: const Text("🛒 Keranjang Belanja"),
           content: SizedBox(
             width: double.maxFinite,
             child: cart.cart.isEmpty
-                ? const Text("Keranjang masih kosong")
+                ? const Center(child: Text("Keranjang masih kosong"))
                 : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -98,15 +144,20 @@ class MenuScreen extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final item = cart.cart[index];
                       return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: AssetImage(item.image),
+                          radius: 20,
+                        ),
                         title: Text(item.name),
                         trailing: Text(
                           "Rp ${item.price.toStringAsFixed(0)}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 10),
+                const Divider(),
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
@@ -126,14 +177,16 @@ class MenuScreen extends StatelessWidget {
                 cart.clearCart();
                 Navigator.pop(dialogContext);
               },
-              child: const Text("Hapus Semua"),
+              child: const Text("🗑 Hapus Semua"),
             ),
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
               child: const Text("Tutup"),
             ),
-            ElevatedButton(
-              onPressed: () {
+            ElevatedButton.icon(
+              onPressed: cart.cart.isEmpty
+                  ? null
+                  : () {
                 Navigator.pop(dialogContext);
                 Navigator.push(
                   context,
@@ -144,17 +197,16 @@ class MenuScreen extends StatelessWidget {
                   ),
                 );
               },
+              icon: const Icon(Icons.payment),
+              label: const Text("Bayar Sekarang"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Colors.green.shade600,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
-              child: const Text("Lanjut ke Pembayaran"),
             ),
           ],
         );
       },
     );
   }
-
-
-
 }

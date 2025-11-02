@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
-import '../providers/theme_provider.dart'; // update mira: import ThemeProvider
+import '../providers/theme_provider.dart';
 import 'menu_screen.dart';
 import 'register_screen.dart';
 import 'user_crud_screen.dart';
@@ -28,18 +28,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // update mira: responsif layout - gunakan LayoutBuilder
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isWide = constraints.maxWidth > 800;
         return Scaffold(
-          // update mira: buat background gradasi colorful
           body: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: Theme.of(context).brightness == Brightness.dark
+                colors: isDark
                     ? [Colors.indigo.shade900, Colors.black]
                     : [Colors.purple.shade400, Colors.blue.shade300],
               ),
@@ -61,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // update mira: layout untuk layar sempit (mobile)
   Widget buildNarrow(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -75,16 +75,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // update mira: layout split untuk layar lebar (Windows / desktop)
   Widget buildWide(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return Card(
       elevation: 16,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: isDark
+          ? Colors.grey.shade900.withOpacity(0.95)
+          : Colors.white.withOpacity(0.95),
       child: SizedBox(
         height: 520,
         child: Row(
           children: [
-            // left: illustration / image area
             Expanded(
               flex: 5,
               child: Container(
@@ -104,7 +108,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'Welcome Back!',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -116,8 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-
-            // right: form area
             Expanded(
               flex: 6,
               child: Padding(
@@ -125,15 +130,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // update mira: toggle theme di pojok kanan atas (desktop)
                     Align(
                       alignment: Alignment.topRight,
                       child: IconButton(
                         tooltip: 'Toggle theme',
-                        icon: Icon(Provider.of<ThemeProvider>(context).mode == ThemeMode.light ? Icons.nights_stay : Icons.wb_sunny),
-                        onPressed: () {
-                          Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-                        },
+                        icon: Icon(
+                          themeProvider.currentTheme == ThemeMode.light
+                              ? Icons.nights_stay
+                              : Icons.wb_sunny,
+                        ),
+                        onPressed: () => themeProvider.toggleTheme(),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -150,31 +156,42 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // update mira: header untuk mobile (logo + toggle)
   Widget buildHeader(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return Column(
       children: [
         const Icon(Icons.local_dining, size: 72, color: Colors.white),
         const SizedBox(height: 12),
-        Text('Foodie App', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+        Text('Foodie App',
+            style: Theme.of(context)
+                .textTheme
+                .headlineSmall
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        // update mira: toggle theme untuk mobile
         Align(
           alignment: Alignment.centerRight,
           child: IconButton(
-            icon: Icon(Provider.of<ThemeProvider>(context).mode == ThemeMode.light ? Icons.nights_stay : Icons.wb_sunny, color: Colors.white),
-            onPressed: () {
-              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-            },
+            icon: Icon(
+              themeProvider.currentTheme == ThemeMode.light
+                  ? Icons.nights_stay
+                  : Icons.wb_sunny,
+              color: Colors.white,
+            ),
+            onPressed: () => themeProvider.toggleTheme(),
           ),
         ),
       ],
     );
   }
 
-  // update mira: card yang berisi form (dipakai di mobile & desktop)
   Widget buildFormCard(BuildContext context, {bool small = false}) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+
     return Card(
+      color: isDark ? Colors.grey.shade900 : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 10,
       child: Padding(
@@ -206,15 +223,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Text(errorMsg, style: const TextStyle(color: Colors.red)),
               ),
-            // update mira: tombol login bergaya gradient (Material elevation + Ink)
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
                   final provider = Provider.of<UserProvider>(context, listen: false);
 
-                  // update mira: Validasi input kosong
-                  if (usernameController.text.trim().isEmpty || passwordController.text.trim().isEmpty) {
+                  if (usernameController.text.trim().isEmpty ||
+                      passwordController.text.trim().isEmpty) {
                     setState(() => errorMsg = "Username dan Password tidak boleh kosong!");
                     return;
                   }
@@ -225,7 +241,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
 
                   if (success) {
-                    // update mira: saat login sukses, navigate ke MenuScreen
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (_) => const MenuScreen()),
@@ -246,7 +261,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                     alignment: Alignment.center,
                     constraints: const BoxConstraints(minHeight: 48),
-                    child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text('Login',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
@@ -257,7 +273,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      // quick demo: navigasi ke register
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
                     },
                     icon: const Icon(Icons.person_add),
@@ -268,7 +283,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      // quick demo: navigasi ke user CRUD
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const UserCrudScreen()));
                     },
                     icon: const Icon(Icons.manage_accounts),
@@ -283,20 +297,56 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // update mira: bagian link bawah (forgot / info)
+  /// Update fitur "Lupa Password"
   Widget buildBottomLinks(BuildContext context) {
     return Column(
       children: [
         TextButton(
           onPressed: () {
-            // contoh action: tampilkan dialog lupa password
+            final usernameCtrl = TextEditingController();
+            final newPasswordCtrl = TextEditingController();
+
             showDialog(
               context: context,
               builder: (_) => AlertDialog(
-                title: const Text('Lupa Password'),
-                content: const Text('Fitur reset password belum diaktifkan.'),
+                title: const Text('Reset Password'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: usernameCtrl,
+                      decoration: const InputDecoration(labelText: 'Username'),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: newPasswordCtrl,
+                      decoration: const InputDecoration(labelText: 'Password Baru'),
+                      obscureText: true,
+                    ),
+                  ],
+                ),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Tutup')),
+                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+                  ElevatedButton(
+                    onPressed: () {
+                      final userProvider = Provider.of<UserProvider>(context, listen: false);
+                      bool success = userProvider.resetPassword(
+                        usernameCtrl.text.trim(),
+                        newPasswordCtrl.text.trim(),
+                      );
+
+                      Navigator.pop(context);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(success
+                              ? "Password berhasil direset!"
+                              : "Username tidak ditemukan!"),
+                        ),
+                      );
+                    },
+                    child: const Text('Reset'),
+                  ),
                 ],
               ),
             );
@@ -305,7 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 6),
         Text(
-          'Versi 1.0 • UTS Project',
+          'Versi 1.1 • UTS Project',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],

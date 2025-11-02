@@ -37,16 +37,8 @@ class UserProvider with ChangeNotifier {
 
   List<User> getAllUsers() => _users;
 
+  /// 🔑 Update password user yang sedang login atau user tertentu
   void updatePassword(String username, String newPassword) {
-    // Update yang sedang login
-    if (_currentUser != null && _currentUser!.username == username) {
-      _currentUser = User(
-        username: _currentUser!.username,
-        password: newPassword,
-      );
-    }
-
-    // Update di list user
     for (int i = 0; i < _users.length; i++) {
       if (_users[i].username == username) {
         _users[i] = User(username: username, password: newPassword);
@@ -54,6 +46,23 @@ class UserProvider with ChangeNotifier {
         break;
       }
     }
+
+    if (_currentUser != null && _currentUser!.username == username) {
+      _currentUser = User(username: username, password: newPassword);
+      notifyListeners();
+    }
+  }
+
+  /// 🧠 Fitur baru: reset password tanpa login
+  bool resetPassword(String username, String newPassword) {
+    for (int i = 0; i < _users.length; i++) {
+      if (_users[i].username == username) {
+        _users[i] = User(username: username, password: newPassword);
+        notifyListeners();
+        return true;
+      }
+    }
+    return false; // Username tidak ditemukan
   }
 
   void deleteUser(String username) {
