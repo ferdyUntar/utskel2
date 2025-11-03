@@ -45,6 +45,11 @@ class CartProvider with ChangeNotifier {
     }
   }
 
+  void removeFromCart(MenuItem item) {
+    _cart.removeWhere((e) => e.name == item.name);
+    notifyListeners();
+  }
+
   void clearCart() {
     _cart.clear();
     notifyListeners();
