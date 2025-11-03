@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/cart_provider.dart';
 
 class PembayaranScreen extends StatelessWidget {
   final double totalHarga;
@@ -7,6 +9,8 @@ class PembayaranScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pembayaran'),
@@ -33,6 +37,7 @@ class PembayaranScreen extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: () {
+                cartProvider.clearCart();
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -43,6 +48,7 @@ class PembayaranScreen extends StatelessWidget {
                     actions: [
                       TextButton(
                         onPressed: () {
+
                           Navigator.popUntil(context, (route) => route.isFirst);
                         },
                         child: const Text('Kembali ke Menu'),
@@ -54,8 +60,7 @@ class PembayaranScreen extends StatelessWidget {
               icon: const Icon(Icons.payment),
               label: const Text('Bayar Sekarang'),
               style: ElevatedButton.styleFrom(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
           ],
@@ -64,4 +69,3 @@ class PembayaranScreen extends StatelessWidget {
     );
   }
 }
-
