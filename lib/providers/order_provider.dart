@@ -3,30 +3,40 @@ import '../models/order.dart';
 import '../services/order_service.dart';
 
 class OrderProvider extends ChangeNotifier {
+  final OrderService _service = OrderService();
   final List<Order> _orders = [];
-  final OrderService _service = OrderService(baseUrl: 'https://your-api-url.mockapi.io'); // Ganti dengan URL API kamu
 
   List<Order> get orders => List.unmodifiable(_orders);
 
-  Future<void> loadOrders(int userId) async {
+  Future<void> loadOrders() async {
     try {
-      final fetched = await _service.fetchUserOrders(userId);
+      final fetched = await _service.fetchOrders();
       _orders
         ..clear()
         ..addAll(fetched);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading orders: $e');
+      debugPrint('❌ Error loading orders: $e');
     }
   }
 
-  void tambahOrder(Order order) {
-    _orders.add(order);
-    notifyListeners();
+  Future<void> tambahOrder(Order order) async {
+    try {
+      await _service.addOrder(order);
+      _orders.add(order);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error adding order: $e');
+    }
   }
 
-  void hapusSemua() {
-    _orders.clear();
-    notifyListeners();
+  Future<void> hapusSemua() async {
+    try {
+      await _service.clearOrders();
+      _orders.clear();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error clearing orders: $e');
+    }
   }
 }

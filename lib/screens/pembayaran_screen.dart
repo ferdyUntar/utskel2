@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import '../models/order.dart';
+import 'menu_screen.dart'; // ✅ agar bisa kembali ke Menu utama
 
 class PembayaranScreen extends StatelessWidget {
   final double totalHarga;
@@ -20,7 +21,10 @@ class PembayaranScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Total Pembayaran Anda:', style: TextStyle(fontSize: 20)),
+            const Text(
+              'Total Pembayaran Anda:',
+              style: TextStyle(fontSize: 20),
+            ),
             const SizedBox(height: 12),
             Text(
               'Rp ${totalHarga.toStringAsFixed(0)}',
@@ -32,12 +36,16 @@ class PembayaranScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             ElevatedButton.icon(
-              onPressed: () {
+              onPressed: () async {
                 final orderProvider =
                 Provider.of<OrderProvider>(context, listen: false);
+                final items = cartProvider.cart;
 
-                final items = cartProvider.cart; // ✅ gunakan getter cart
+                // 🔹 Simpan context ke variabel lokal agar aman dari async gaps
+                final navigator = Navigator.of(context);
+                final messenger = ScaffoldMessenger.of(context);
 
+                // 🔹 Buat object pesanan baru
                 final newOrder = Order(
                   id: DateTime.now().millisecondsSinceEpoch,
                   namaMakanan: items.isNotEmpty
@@ -48,38 +56,76 @@ class PembayaranScreen extends StatelessWidget {
                   tanggal: DateTime.now(),
                 );
 
-                orderProvider.tambahOrder(newOrder);
-                cartProvider.clearCart();
+                try {
+                  // ✅ Simpan ke server (MockAPI)
+                  await orderProvider.tambahOrder(newOrder);
 
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Pembayaran Berhasil'),
-                    content: const Text(
-                      'Terima kasih telah melakukan pembayaran.\nPesanan Anda sedang diproses!',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/history');
-                        },
-                        child: const Text('Lihat Riwayat Pesanan'),
+                  // Hapus isi keranjang setelah pembayaran
+                  cartProvider.clearCart();
+
+                  // Tampilkan dialog sukses
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        title: const Text('Pembayaran Berhasil'),
+                        content: const Text(
+                          'Pesanan Anda berhasil disimpan ke server dan sedang diproses!',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () async {
+                              // Tutup dialog
+                              Navigator.pop(dialogContext);
+
+                              // Muat ulang data riwayat
+                              await orderProvider.loadOrders();
+
+                              // Kembali ke Menu utama
+                              navigator.pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (_) => const MenuScreen(),
+                                ),
+                                    (Route<dynamic> route) => false,
+                              );
+
+                              // ✅ Gunakan messenger yang disimpan sebelum async
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('✅ Pembayaran berhasil!'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Text('Kembali ke Menu'),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.popUntil(context, (route) => route.isFirst);
-                        },
-                        child: const Text('Kembali ke Menu'),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Gagal Menyimpan Pesanan'),
+                        content: Text('Terjadi kesalahan: $e'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Tutup'),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
+                    );
+                  }
+                }
               },
               icon: const Icon(Icons.payment),
               label: const Text('Bayar Sekarang'),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
           ],

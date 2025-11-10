@@ -50,9 +50,10 @@ class MenuScreen extends StatelessWidget {
             icon: const Icon(Icons.history),
             onPressed: () async {
               final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-              await orderProvider.loadOrders(1); // misalnya userId = 1
+              await orderProvider.loadOrders(); // 🔁 Ambil dari MockAPI
               _showHistoryDialog(context, orderProvider);
             },
+
 
           ),
 
