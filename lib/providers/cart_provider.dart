@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/menu_item.dart';
 
-class CartProvider with ChangeNotifier {
+class CartProvider with ChangeNotifier {  // ⚠️ Pastikan huruf besar kecil persis
   final List<MenuItem> _cart = [];
 
   List<MenuItem> get cart => _cart;

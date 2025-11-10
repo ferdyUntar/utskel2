@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/order_provider.dart';
+import '../models/order.dart';
 
 class PembayaranScreen extends StatelessWidget {
   final double totalHarga;
@@ -12,19 +14,13 @@ class PembayaranScreen extends StatelessWidget {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pembayaran'),
-      ),
+      appBar: AppBar(title: const Text('Pembayaran')),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Total Pembayaran Anda:',
-              style: TextStyle(fontSize: 20),
-            ),
+            const Text('Total Pembayaran Anda:', style: TextStyle(fontSize: 20)),
             const SizedBox(height: 12),
             Text(
               'Rp ${totalHarga.toStringAsFixed(0)}',
@@ -37,7 +33,24 @@ class PembayaranScreen extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton.icon(
               onPressed: () {
+                final orderProvider =
+                Provider.of<OrderProvider>(context, listen: false);
+
+                final items = cartProvider.cart; // ✅ gunakan getter cart
+
+                final newOrder = Order(
+                  id: DateTime.now().millisecondsSinceEpoch,
+                  namaMakanan: items.isNotEmpty
+                      ? items.map((e) => e.name).join(', ')
+                      : 'Pesanan Kosong',
+                  jumlah: items.length,
+                  totalHarga: totalHarga,
+                  tanggal: DateTime.now(),
+                );
+
+                orderProvider.tambahOrder(newOrder);
                 cartProvider.clearCart();
+
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -48,7 +61,13 @@ class PembayaranScreen extends StatelessWidget {
                     actions: [
                       TextButton(
                         onPressed: () {
-
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/history');
+                        },
+                        child: const Text('Lihat Riwayat Pesanan'),
+                      ),
+                      TextButton(
+                        onPressed: () {
                           Navigator.popUntil(context, (route) => route.isFirst);
                         },
                         child: const Text('Kembali ke Menu'),

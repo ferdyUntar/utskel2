@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         const Icon(Icons.local_dining, size: 72, color: Colors.white),
         const SizedBox(height: 12),
-        Text('Foodie App',
+        Text('Yey Food',
             style: Theme.of(context)
                 .textTheme
                 .headlineSmall

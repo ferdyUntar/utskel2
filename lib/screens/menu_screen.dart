@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
+import '../models/order.dart';
 import '../providers/cart_provider.dart';
+import '../providers/order_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/user_provider.dart';
 import '../widgets/menu_card.dart';
@@ -27,16 +29,34 @@ class MenuScreen extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("Daftar Menu", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Daftar Menu",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
+          // 🌙 Toggle Tema
           IconButton(
             tooltip: 'Toggle theme',
             icon: Icon(isDark ? Icons.wb_sunny : Icons.nights_stay),
             onPressed: () => themeProvider.toggleTheme(),
           ),
+
+          // 🕓 Riwayat Pemesanan
+          IconButton(
+            tooltip: 'Riwayat Pemesanan',
+            icon: const Icon(Icons.history),
+            onPressed: () async {
+              final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+              await orderProvider.loadOrders(1); // misalnya userId = 1
+              _showHistoryDialog(context, orderProvider);
+            },
+
+          ),
+
+          // 🛒 Keranjang Belanja
           Stack(
             children: [
               IconButton(
@@ -62,6 +82,8 @@ class MenuScreen extends StatelessWidget {
                 ),
             ],
           ),
+
+          // 🚪 Logout
           IconButton(
             tooltip: 'Logout',
             icon: const Icon(Icons.logout),
@@ -120,6 +142,7 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
+  /// 🛒 Dialog Keranjang Belanja
   void _showCartDialog(BuildContext context, CartProvider cart) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -205,6 +228,96 @@ class MenuScreen extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  /// 🧾 Dialog Riwayat Pemesanan
+  void _showHistoryDialog(BuildContext context, OrderProvider orderProvider) {
+    final orders = orderProvider.orders;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? Colors.grey.shade900 : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const Text(
+                "🧾 Riwayat Pemesanan",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              orders.isEmpty
+                  ? const Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text(
+                  "Belum ada riwayat pemesanan.",
+                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                ),
+              )
+                  : SizedBox(
+                height: 350,
+                child: ListView.builder(
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    final order = orders[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue.shade100,
+                          child: Text('${index + 1}'),
+                        ),
+                        title: Text(order.namaMakanan),
+                        subtitle: Text(
+                          'Jumlah: ${order.jumlah}\nTanggal: ${order.tanggal.toString().split(" ")[0]}',
+                        ),
+                        trailing: Text(
+                          'Rp ${order.totalHarga.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: orders.isEmpty
+                      ? null
+                      : () {
+                    orderProvider.hapusSemua();
+                    Navigator.pop(ctx);
+                  },
+                  icon: const Icon(Icons.delete_forever, color: Colors.red),
+                  label: const Text("Hapus Semua", style: TextStyle(color: Colors.red)),
+                ),
+              )
+            ],
+          ),
         );
       },
     );
