@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import '../models/order.dart';
-import 'menu_screen.dart'; // ✅ agar bisa kembali ke Menu utama
+import 'menu_screen.dart';
 
 class PembayaranScreen extends StatelessWidget {
   final double totalHarga;
@@ -75,13 +75,10 @@ class PembayaranScreen extends StatelessWidget {
                         actions: [
                           TextButton(
                             onPressed: () async {
-                              // Tutup dialog
                               Navigator.pop(dialogContext);
-
-                              // Muat ulang data riwayat
                               await orderProvider.loadOrders();
 
-                              // Kembali ke Menu utama
+
                               navigator.pushAndRemoveUntil(
                                 MaterialPageRoute(
                                   builder: (_) => const MenuScreen(),
@@ -89,7 +86,7 @@ class PembayaranScreen extends StatelessWidget {
                                     (Route<dynamic> route) => false,
                               );
 
-                              // ✅ Gunakan messenger yang disimpan sebelum async
+
                               messenger.showSnackBar(
                                 const SnackBar(
                                   content: Text('✅ Pembayaran berhasil!'),

@@ -37,14 +37,14 @@ class MenuScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // 🌙 Toggle Tema
+          // Toggle Tema biar bisa dark atau light
           IconButton(
             tooltip: 'Toggle theme',
             icon: Icon(isDark ? Icons.wb_sunny : Icons.nights_stay),
             onPressed: () => themeProvider.toggleTheme(),
           ),
 
-          // 🕓 Riwayat Pemesanan
+          //  Historynya
           IconButton(
             tooltip: 'Riwayat Pemesanan',
             icon: const Icon(Icons.history),
@@ -57,7 +57,7 @@ class MenuScreen extends StatelessWidget {
 
           ),
 
-          // 🛒 Keranjang Belanja
+          //  Keranjang
           Stack(
             children: [
               IconButton(
@@ -84,7 +84,7 @@ class MenuScreen extends StatelessWidget {
             ],
           ),
 
-          // 🚪 Logout
+          // tombol logout
           IconButton(
             tooltip: 'Logout',
             icon: const Icon(Icons.logout),
@@ -143,7 +143,6 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  /// 🛒 Dialog Keranjang Belanja
   void _showCartDialog(BuildContext context, CartProvider cart) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -234,7 +233,7 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  /// 🧾 Dialog Riwayat Pemesanan
+  ///  buat cek riwayat
   void _showHistoryDialog(BuildContext context, OrderProvider orderProvider) {
     final orders = orderProvider.orders;
     final isDark = Theme.of(context).brightness == Brightness.dark;

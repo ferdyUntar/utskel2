@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../providers/theme_provider.dart';
-import 'login.dart'; // untuk kembali ke login
+import 'login.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ✅ Layout untuk layar kecil (mobile)
+  //  Layout untuk layar kecil (mobile)
   Widget buildNarrow(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -70,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ✅ Layout untuk layar lebar (desktop)
+  //  Layout untuk layar lebar (desktop)
   Widget buildWide(BuildContext context) {
     return Card(
       elevation: 16,
@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ✅ Card Form Registrasi
+
   Widget buildFormCard(BuildContext context, {bool small = false}) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -182,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   userProvider.addUser(username, password);
                   setState(() => message = "User berhasil didaftarkan!");
 
-                  // ✅ kembali otomatis ke login setelah 1,5 detik
+
                   Future.delayed(const Duration(seconds: 1), () {
                     Navigator.pushReplacement(
                       context,
