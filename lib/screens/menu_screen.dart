@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/menu_item.dart';
-import '../models/order.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import '../providers/theme_provider.dart';
@@ -37,27 +36,28 @@ class MenuScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          // Toggle Tema biar bisa dark atau light
+          // Toggle Temanya
           IconButton(
             tooltip: 'Toggle theme',
             icon: Icon(isDark ? Icons.wb_sunny : Icons.nights_stay),
             onPressed: () => themeProvider.toggleTheme(),
           ),
 
-          //  Historynya
+          // Riwayat Pemesanan
           IconButton(
             tooltip: 'Riwayat Pemesanan',
             icon: const Icon(Icons.history),
             onPressed: () async {
               final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-              await orderProvider.loadOrders(); // 🔁 Ambil dari MockAPI
-              _showHistoryDialog(context, orderProvider);
+              final userProvider = Provider.of<UserProvider>(context, listen: false);
+              final userId = userProvider.currentUser?.userId ?? 'guest';
+
+              await orderProvider.loadOrders(userId); // ini yang buat khusus riwayar user ini
+              _showHistoryDialog(context, orderProvider, userId);
             },
-
-
           ),
 
-          //  Keranjang
+          // Keranjang
           Stack(
             children: [
               IconButton(
@@ -84,7 +84,7 @@ class MenuScreen extends StatelessWidget {
             ],
           ),
 
-          // tombol logout
+          // tombol Logout
           IconButton(
             tooltip: 'Logout',
             icon: const Icon(Icons.logout),
@@ -98,6 +98,7 @@ class MenuScreen extends StatelessWidget {
           ),
         ],
       ),
+
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -143,6 +144,7 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
+  // Keranjang
   void _showCartDialog(BuildContext context, CartProvider cart) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -224,7 +226,8 @@ class MenuScreen extends StatelessWidget {
               label: const Text("Bayar Sekarang"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
             ),
           ],
@@ -233,8 +236,9 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
-  ///  buat cek riwayat
-  void _showHistoryDialog(BuildContext context, OrderProvider orderProvider) {
+  //  Riwayat Pesanan
+  void _showHistoryDialog(
+      BuildContext context, OrderProvider orderProvider, String userId) {
     final orders = orderProvider.orders;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -270,7 +274,8 @@ class MenuScreen extends StatelessWidget {
                 padding: EdgeInsets.all(20.0),
                 child: Text(
                   "Belum ada riwayat pemesanan.",
-                  style: TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                  style: TextStyle(
+                      fontSize: 16, fontStyle: FontStyle.italic),
                 ),
               )
                   : SizedBox(
@@ -280,7 +285,8 @@ class MenuScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final order = orders[index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      margin:
+                      const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: Colors.blue.shade100,
@@ -309,11 +315,12 @@ class MenuScreen extends StatelessWidget {
                   onPressed: orders.isEmpty
                       ? null
                       : () {
-                    orderProvider.hapusSemua();
+                    orderProvider.hapusSemua(userId);
                     Navigator.pop(ctx);
                   },
                   icon: const Icon(Icons.delete_forever, color: Colors.red),
-                  label: const Text("Hapus Semua", style: TextStyle(color: Colors.red)),
+                  label: const Text("Hapus Semua",
+                      style: TextStyle(color: Colors.red)),
                 ),
               )
             ],

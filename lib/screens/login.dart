@@ -1,4 +1,3 @@
-// lib/screens/login.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
@@ -62,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// 💻 Layout untuk layar kecil (HP)
   Widget buildNarrow(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -75,6 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// 💻 Layout untuk layar lebar (Desktop)
   Widget buildWide(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
@@ -83,8 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
       elevation: 16,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       color: isDark
-          ? Colors.grey.shade900.withOpacity(0.95)
-          : Colors.white.withOpacity(0.95),
+          ? Colors.grey.shade900.withValues(alpha: 0.95)
+          : Colors.white.withValues(alpha: 0.95),
       child: SizedBox(
         height: 520,
         child: Row(
@@ -93,7 +94,8 @@ class _LoginScreenState extends State<LoginScreen> {
               flex: 5,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(20)),
+                  borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(20)),
                   gradient: LinearGradient(
                     colors: [Colors.purple.shade300, Colors.blue.shade200],
                     begin: Alignment.topLeft,
@@ -104,19 +106,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.local_dining, size: 80, color: Colors.white),
+                    const Icon(Icons.local_dining,
+                        size: 80, color: Colors.white),
                     const SizedBox(height: 12),
                     Text(
                       'Welcome Back!',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Sign in to continue ordering your favorite meals',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: Colors.white70),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -156,10 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// 🧾 Header atas (judul dan ikon)
   Widget buildHeader(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.isDarkMode;
-
     return Column(
       children: [
         const Icon(Icons.local_dining, size: 72, color: Colors.white),
@@ -169,23 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 .textTheme
                 .headlineSmall
                 ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            icon: Icon(
-              themeProvider.currentTheme == ThemeMode.light
-                  ? Icons.nights_stay
-                  : Icons.wb_sunny,
-              color: Colors.white,
-            ),
-            onPressed: () => themeProvider.toggleTheme(),
-          ),
-        ),
       ],
     );
   }
 
+  /// 📋 Kartu Form Login
   Widget buildFormCard(BuildContext context, {bool small = false}) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
@@ -195,7 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 10,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: small ? 18 : 22, vertical: small ? 20 : 26),
+        padding: EdgeInsets.symmetric(
+            horizontal: small ? 18 : 22, vertical: small ? 20 : 26),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -227,11 +222,13 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  final provider = Provider.of<UserProvider>(context, listen: false);
+                  final provider =
+                  Provider.of<UserProvider>(context, listen: false);
 
                   if (usernameController.text.trim().isEmpty ||
                       passwordController.text.trim().isEmpty) {
-                    setState(() => errorMsg = "Username dan Password tidak boleh kosong!");
+                    setState(() => errorMsg =
+                    "Username dan Password tidak boleh kosong!");
                     return;
                   }
 
@@ -251,18 +248,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Ink(
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [Colors.deepPurple.shade400, Colors.pinkAccent.shade200]),
+                    gradient: LinearGradient(colors: [
+                      Colors.deepPurple.shade400,
+                      Colors.pinkAccent.shade200
+                    ]),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Container(
                     alignment: Alignment.center,
                     constraints: const BoxConstraints(minHeight: 48),
                     child: const Text('Login',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
@@ -273,7 +275,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const RegisterScreen()));
                     },
                     icon: const Icon(Icons.person_add),
                     label: const Text('Register'),
@@ -283,7 +286,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const UserCrudScreen()));
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const UserCrudScreen()));
                     },
                     icon: const Icon(Icons.manage_accounts),
                     label: const Text('Users'),
@@ -297,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  /// Update fitur "Lupa Password"
+  /// 🔑 Lupa Password dan Versi Info
   Widget buildBottomLinks(BuildContext context) {
     return Column(
       children: [
@@ -320,16 +324,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 10),
                     TextField(
                       controller: newPasswordCtrl,
-                      decoration: const InputDecoration(labelText: 'Password Baru'),
+                      decoration:
+                      const InputDecoration(labelText: 'Password Baru'),
                       obscureText: true,
                     ),
                   ],
                 ),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+                  TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Batal')),
                   ElevatedButton(
                     onPressed: () {
-                      final userProvider = Provider.of<UserProvider>(context, listen: false);
+                      final userProvider =
+                      Provider.of<UserProvider>(context, listen: false);
                       bool success = userProvider.resetPassword(
                         usernameCtrl.text.trim(),
                         newPasswordCtrl.text.trim(),

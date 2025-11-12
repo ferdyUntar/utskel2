@@ -12,35 +12,55 @@ class UserCrudScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Kelola User")),
-      body: ListView.builder(
+      body: userProvider.users.isEmpty
+          ? const Center(child: Text("Belum ada user terdaftar"))
+          : ListView.builder(
         itemCount: userProvider.users.length,
         itemBuilder: (context, index) {
           final user = userProvider.users[index];
 
-          return ListTile(
-            title: Text(user.username),
-            subtitle: Text("Password: ${user.password}"),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => UpdatePasswordScreen(username: user.username),
-                      ),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    userProvider.deleteUser(user.username);
-                  },
-                ),
-              ],
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.blue.shade100,
+                child: Text('${index + 1}'),
+              ),
+              title: Text(user.userName),
+              subtitle: Text("Password: ${user.userPass}"),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: "Ubah Password",
+                    icon: const Icon(Icons.edit, color: Colors.orange),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              UpdatePasswordScreen(username: user.userName),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    tooltip: "Hapus User",
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () {
+                      userProvider.deleteUser(user.userName);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            "User '${user.userName}' telah dihapus!",
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         },

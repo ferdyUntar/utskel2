@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/order.dart';
 import 'menu_screen.dart';
 
@@ -36,16 +37,28 @@ class PembayaranScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             ElevatedButton.icon(
+              icon: const Icon(Icons.payment),
+              label: const Text('Bayar Sekarang'),
+              style: ElevatedButton.styleFrom(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+
+              //  tombol bayar
               onPressed: () async {
                 final orderProvider =
                 Provider.of<OrderProvider>(context, listen: false);
-                final items = cartProvider.cart;
+                final userProvider =
+                Provider.of<UserProvider>(context, listen: false);
 
-                // 🔹 Simpan context ke variabel lokal agar aman dari async gaps
+
                 final navigator = Navigator.of(context);
                 final messenger = ScaffoldMessenger.of(context);
 
-                // 🔹 Buat object pesanan baru
+                final items = cartProvider.cart;
+                final userId = userProvider.currentUser?.userId ?? 'guest';
+
+                // Buat objek pesanan baru
                 final newOrder = Order(
                   id: DateTime.now().millisecondsSinceEpoch,
                   namaMakanan: items.isNotEmpty
@@ -54,76 +67,67 @@ class PembayaranScreen extends StatelessWidget {
                   jumlah: items.length,
                   totalHarga: totalHarga,
                   tanggal: DateTime.now(),
+                  userId: userId,
                 );
 
                 try {
-                  // ✅ Simpan ke server (MockAPI)
+                  //  Simpan order ke server (MockAPI atau lokal)
                   await orderProvider.tambahOrder(newOrder);
-
-                  // Hapus isi keranjang setelah pembayaran
                   cartProvider.clearCart();
 
-                  // Tampilkan dialog sukses
-                  if (context.mounted) {
-                    showDialog(
-                      context: context,
-                      builder: (dialogContext) => AlertDialog(
-                        title: const Text('Pembayaran Berhasil'),
-                        content: const Text(
-                          'Pesanan Anda berhasil disimpan ke server dan sedang diproses!',
+                  if (!context.mounted) return;
+
+                  //  dialog sukses
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Pembayaran Berhasil'),
+                      content: const Text(
+                        'Pesanan Anda berhasil disimpan ke server dan sedang diproses!',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(dialogContext); // tutup dialog
+                            await orderProvider.loadOrders(userId);
+
+                            // ✅ kembali ke MenuScreen tanpa bisa back
+                            navigator.pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => const MenuScreen(),
+                              ),
+                                  (route) => false,
+                            );
+
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('✅ Pembayaran berhasil!'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: const Text('Kembali ke Menu'),
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.pop(dialogContext);
-                              await orderProvider.loadOrders();
-
-
-                              navigator.pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (_) => const MenuScreen(),
-                                ),
-                                    (Route<dynamic> route) => false,
-                              );
-
-
-                              messenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('✅ Pembayaran berhasil!'),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            child: const Text('Kembali ke Menu'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                      ],
+                    ),
+                  );
                 } catch (e) {
-                  if (context.mounted) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Gagal Menyimpan Pesanan'),
-                        content: Text('Terjadi kesalahan: $e'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Tutup'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                  if (!context.mounted) return;
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text('Gagal Menyimpan Pesanan'),
+                      content: Text('Terjadi kesalahan: $e'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Tutup'),
+                        ),
+                      ],
+                    ),
+                  );
                 }
               },
-              icon: const Icon(Icons.payment),
-              label: const Text('Bayar Sekarang'),
-              style: ElevatedButton.styleFrom(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
             ),
           ],
         ),

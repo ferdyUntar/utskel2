@@ -1,77 +1,96 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 
-class UserProvider with ChangeNotifier {
-  List<User> _users = [
-    User(username: "admin", password: "123"),
-  ];
-
+class UserProvider extends ChangeNotifier {
+  final List<User> _users = [];
   User? _currentUser;
+
+  List<User> get users => List.unmodifiable(_users);
   User? get currentUser => _currentUser;
+  bool get isLoggedIn => _currentUser != null;
 
-  List<User> get users => _users;
+  //  Tambah user baru
+  void addUser(String username, String password) {
+    if (_users.any((u) => u.userName == username)) {
+      debugPrint("⚠️ Username '$username' sudah digunakan!");
+      return;
+    }
 
-  bool login(String username, String password) {
-    final user = _users.firstWhere(
-          (u) => u.username == username && u.password == password,
-      orElse: () => User(username: "", password: ""),
+    final newUser = User(
+      userId: DateTime.now().millisecondsSinceEpoch.toString(),
+      userName: username,
+      userPass: password,
     );
 
-    if (user.username.isNotEmpty) {
-      _currentUser = user;
-      notifyListeners();
-      return true;
-    }
-    return false;
+    _users.add(newUser);
+    debugPrint("✅ User baru ditambahkan: ${newUser.userName}");
+    notifyListeners();
   }
 
+  // ✅ Login user
+  bool login(String username, String password) {
+    try {
+      final user = _users.firstWhere(
+            (u) => u.userName == username && u.userPass == password,
+      );
+      _currentUser = user;
+      debugPrint("✅ Login berhasil: ${user.userName}");
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint("❌ Login gagal: user tidak ditemukan");
+      return false;
+    }
+  }
+
+  // ✅ Logout user
   void logout() {
     _currentUser = null;
     notifyListeners();
   }
 
-  void addUser(String username, String password) {
-    _users.add(User(username: username, password: password));
-    notifyListeners();
-  }
-
-  List<User> getAllUsers() => _users;
-
-  /// 🔑 Update password user yang sedang login atau user tertentu
-  void updatePassword(String username, String newPassword) {
-    for (int i = 0; i < _users.length; i++) {
-      if (_users[i].username == username) {
-        _users[i] = User(username: username, password: newPassword);
-        notifyListeners();
-        break;
-      }
-    }
-
-    if (_currentUser != null && _currentUser!.username == username) {
-      _currentUser = User(username: username, password: newPassword);
-      notifyListeners();
-    }
-  }
-
-  /// 🧠 Fitur baru: reset password tanpa login
+  // ✅ Reset Password (Lupa Password)
   bool resetPassword(String username, String newPassword) {
-    for (int i = 0; i < _users.length; i++) {
-      if (_users[i].username == username) {
-        _users[i] = User(username: username, password: newPassword);
-        notifyListeners();
-        return true;
-      }
+    final index = _users.indexWhere((u) => u.userName == username);
+    if (index == -1) {
+      debugPrint("⚠️ Username tidak ditemukan");
+      return false;
     }
-    return false; // Username tidak ditemukan
+
+    final user = _users[index];
+    _users[index] = User(
+      userId: user.userId,
+      userName: user.userName,
+      userPass: newPassword,
+    );
+
+    debugPrint("🔑 Password untuk ${user.userName} berhasil diubah (reset password).");
+    notifyListeners();
+    return true;
   }
 
-  void deleteUser(String username) {
-    _users.removeWhere((u) => u.username == username);
+  // Update Password
+  void updatePassword(String username, String newPassword) {
+    final index = _users.indexWhere((u) => u.userName == username);
+    if (index != -1) {
+      final user = _users[index];
+      _users[index] = User(
+        userId: user.userId,
+        userName: user.userName,
+        userPass: newPassword,
+      );
 
-    if (_currentUser != null && _currentUser!.username == username) {
-      _currentUser = null;
+      debugPrint("✅ Password untuk ${user.userName} berhasil diperbarui (via CRUD).");
+      notifyListeners();
+    } else {
+      debugPrint("⚠️ Gagal memperbarui password: username tidak ditemukan.");
     }
+  }
 
+  // Hapus user
+  void deleteUser(String username) {
+    _users.removeWhere((u) => u.userName == username);
+    debugPrint("🗑 User $username dihapus");
     notifyListeners();
   }
 }

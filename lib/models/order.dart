@@ -4,6 +4,7 @@ class Order {
   final int jumlah;
   final double totalHarga;
   final DateTime tanggal;
+  final String userId;
 
   Order({
     required this.id,
@@ -11,29 +12,28 @@ class Order {
     required this.jumlah,
     required this.totalHarga,
     required this.tanggal,
+    required this.userId,
   });
 
-  /// ✅ Tambahkan ini agar bisa parsing dari JSON (API → Object)
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      id: int.tryParse(json['id'].toString()) ?? 0,
       namaMakanan: json['namaMakanan'] ?? '',
-      jumlah: json['jumlah'] is int ? json['jumlah'] : int.tryParse(json['jumlah'].toString()) ?? 0,
-      totalHarga: (json['totalHarga'] is double)
-          ? json['totalHarga']
-          : double.tryParse(json['totalHarga'].toString()) ?? 0.0,
-      tanggal: DateTime.tryParse(json['tanggal'].toString()) ?? DateTime.now(),
+      jumlah: int.tryParse(json['jumlah'].toString()) ?? 0,
+      totalHarga: double.tryParse(json['totalHarga'].toString()) ?? 0.0,
+      tanggal: DateTime.tryParse(json['tanggal'] ?? '') ?? DateTime.now(),
+      userId: json['userId'] ?? '',
     );
   }
 
-  /// ✅ Tambahkan juga supaya bisa kirim ke server (Object → JSON)
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': id.toString(),
       'namaMakanan': namaMakanan,
       'jumlah': jumlah,
       'totalHarga': totalHarga,
       'tanggal': tanggal.toIso8601String(),
+      'userId': userId,
     };
   }
 }
